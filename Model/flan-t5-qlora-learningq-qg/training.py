@@ -14,6 +14,7 @@ from peft import LoraConfig, get_peft_model, TaskType
 
 model_name = "google/flan-t5-base"
 
+# init the BitsAndBytesConfig for model quantization
 bnb_config = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_compute_dtype=torch.float16,
@@ -21,15 +22,18 @@ bnb_config = BitsAndBytesConfig(
     bnb_4bit_quant_type="nf4"
 )
 
+# Load quantized model
 tokenizer   = AutoTokenizer.from_pretrained(model_name)
 model       = AutoModelForSeq2SeqLM.from_pretrained(model_name, quantization_config=bnb_config, device_map="auto")
 
 tokenized_train_dataset_dir = "./Datasets/tokenized_train_dataset"
 tokenized_eval_dataset_dir  = "./Datasets/tokenized_eval_dataset"
 
+# Load tokenized train and validation datasets from disk
 train_dataset   = load_from_disk(tokenized_train_dataset_dir)
 eval_dataset    = load_from_disk(tokenized_eval_dataset_dir)
 
+# Init LoraConfig for PEFT
 lora_config = LoraConfig(
     task_type=TaskType.SEQ_2_SEQ_LM,
     inference_mode=False,
@@ -37,17 +41,21 @@ lora_config = LoraConfig(
     lora_alpha=32,
     lora_dropout=0.05
 )
-
+# Load PEFT model using base mode and LoraConfig
 model = get_peft_model(model, lora_config)
+# Show trainable parameters to make sure only adapter parameters are going to be trained
 model.print_trainable_parameters()
 
+# Load ROUGE metric
 rouge = evaluate.load("rouge")
 
+# Postprocessing for removing whitespaces
 def postprocess_text(preds, labels):
     preds   = [pred.strip() for pred in preds]
     labels  = [label.strip() for label in labels]
     return preds, labels
 
+# Use ROUGE to compute metrics during training and validation
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
 
@@ -108,9 +116,11 @@ trainer = Seq2SeqTrainer(
     compute_metrics=compute_metrics,
 )
 
+# Train model
 trainer.train()
 
 model_dir = "./trained_model"
 
+# Save model and tokenizer after trining
 trainer.save_model(model_dir)
 tokenizer.save_pretrained(model_dir)

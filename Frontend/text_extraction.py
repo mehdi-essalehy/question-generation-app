@@ -4,19 +4,20 @@ from docx import Document # pip install python-docx
 from enum import Enum
 import re
 
+# Clean text of special characters and invisible characters
 def clean_text(text):
     text = re.sub(r'\s+', ' ', text)
     text = re.sub(r'[^\x00-\x7F]+', '', text)
     return text.strip()
 
-# Function to remove references (like [1], [2], etc.) from the text
+# Remove references (like [1], [2], etc.) from the text
 def remove_references(text):
     # Regular expression for matching references like [1], [2], or (Smith, 2000)
     ref_pattern = r'(\[\d+\])|(\(\w+, \d{4}\))'
     cleaned_text = re.sub(ref_pattern, '', text)
     return cleaned_text
 
-# Function to remove bibliography section
+# Remove bibliography section
 def remove_bibliography(text):
     # Look for the start of the bibliography or references section
     bibliography_keywords = ['references', 'bibliography']
@@ -62,4 +63,4 @@ def extract_from_file(file, filetype=FileType.DOCX):
     elif filetype == FileType.PPTX:
         return extract_from_pptx(file)
     else:
-        raise ValueError("Enter a valid file type (pdf, docx, pptx).")
+        raise ValueError("Invalid filetype detected!")

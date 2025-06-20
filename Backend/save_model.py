@@ -3,7 +3,7 @@ from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 model_name = "flan-t5-qlora-learningq-qg"
 remote_model_path = f"elmehdiessalehy/{model_name}"
 
-# Load fine-tuned model and tokenizer
+# Load fine-tuned model and tokenizer from huggingface hub
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 

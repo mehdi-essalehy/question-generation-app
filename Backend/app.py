@@ -2,11 +2,12 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 import torch
+
 # Initialize FastAPI app
 app = FastAPI()
 
-print("Loading model...")
 # Load fine-tuned model and tokenizer
+print("Loading model...")
 model_name = "./model"
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -32,11 +33,12 @@ def generate_questions(paragraphs):
             with torch.no_grad():
                 outputs = model.generate(inputs['input_ids'], max_length=128, num_return_sequences=1)
 
-            # Decode the generated question(s)
+            # Decode the generated question
             question = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
             questions.append(question)
         except Exception as e:
+            # if an error occurs add it in place of a question
             questions.append(f"Error generating question: {str(e)}")
     return questions
 
@@ -44,12 +46,16 @@ def generate_questions(paragraphs):
 @app.post("/generate_questions/")
 async def generate_questions_endpoint(request: TextRequest):
     try:
+        # Extract data from request
         paragraphs = request.paragraphs
+        # Raise error if no paragraphs are prvided
         if not paragraphs:
             raise HTTPException(status_code=400, detail="No paragraphs provided.")
         
         # Generate questions
         questions = generate_questions(paragraphs)
+
+        # Send response
         return {"questions": questions}
 
     except HTTPException as http_err:

@@ -19,20 +19,25 @@ def chunk_text(text, window_size=3, overlap=1):
 
 # STEP 3 — Semantic filtering using embeddings
 def semantic_filter(chunks, embedding_model, topic, threshold):
-    reference_embedding = embedding_model.encode(topic, convert_to_tensor=True)
+    reference_embedding = embedding_model.encode(topic, convert_to_tensor=True) # get sentence embedding of the topic
     filtered_chunks = []
     for chunk in chunks:
-        embedding = embedding_model.encode(chunk, convert_to_tensor=True)
-        score = util.cos_sim(embedding, reference_embedding).item()
+        embedding = embedding_model.encode(chunk, convert_to_tensor=True) # get sentence embedding of text chunk
+        score = util.cos_sim(embedding, reference_embedding).item() # compute the cosine similarity between the embeddings
+        # Filter the text chunk based on the cosine similarity score obtained
         if score > threshold:
             filtered_chunks.append(chunk)
     return filtered_chunks
 
-# STEP 4 — Entity filtering (optional, more precision)
+# STEP 4 — Entity filtering (optional)
 def entity_filter(chunks, nlp, target_entities=None):
+    # Load spacy model and set target entities if needed
+    if nlp == None:
+        from spacy import load
+        nlp = load("en_core_web_sm")
     if target_entities is None:
         target_entities = ["PERSON", "ORG", "GPE", "EVENT", "DATE", "PRODUCT"]
-
+    # Filter chunks based on whether they contain any entities corresponding to the target entities, according to the spacy model
     filtered_chunks = []
     for chunk in chunks:
         doc = nlp(chunk)
@@ -42,11 +47,11 @@ def entity_filter(chunks, nlp, target_entities=None):
 
 # FULL PIPELINE
 def segment_for_question_generation(raw_text, embedding_model, nlp=None, topic="general", window_size=3, overlap=1, semantic_threshold=0.4, entity_filtering=True):
-    cleaned = clean_text(raw_text)
-    chunks = chunk_text(cleaned, window_size, overlap)
-    semantically_relevant = semantic_filter(chunks, embedding_model, topic, semantic_threshold)
+    cleaned = clean_text(raw_text) # clean text
+    chunks = chunk_text(cleaned, window_size, overlap) # split text
+    semantically_relevant = semantic_filter(chunks, embedding_model, topic, semantic_threshold) # filter chunks based on cosine similarity with topic
     if entity_filtering:
-        final_chunks = entity_filter(semantically_relevant, nlp)
+        final_chunks = entity_filter(semantically_relevant, nlp) # filter chunks based on entity recognition if it is required 
     else:
         final_chunks = semantically_relevant
     return final_chunks

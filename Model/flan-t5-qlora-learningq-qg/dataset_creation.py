@@ -28,7 +28,7 @@ max_input_length = 512
 max_target_length = 64
 
 def preprocess_function(examples):
-    inputs  = ["generate question: " + c for c in examples['context']]
+    inputs  = ["generate question: " + c for c in examples['context']] # add prefix
     targets = examples['question']
 
     model_inputs    = tokenizer(inputs, max_length=max_input_length, truncation=True, padding="max_length")

@@ -1,10 +1,11 @@
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
-merged_model_dir = "./merged_model"
+model_name = "flan-t5-qlora-learningq-qg"
+remote_model_path = f"elmehdiessalehy/{model_name}"
 
-# Load merged model
-model       = AutoModelForSeq2SeqLM.from_pretrained(merged_model_dir)
-tokenizer   = AutoTokenizer.from_pretrained(merged_model_dir)
+# Load model from huggingface hub
+model       = AutoModelForSeq2SeqLM.from_pretrained(remote_model_path)
+tokenizer   = AutoTokenizer.from_pretrained(remote_model_path)
 
 # Move model to device (CPU or GPU)
 import torch
@@ -13,7 +14,8 @@ model.to(device)
 
 # Define inference function
 def generate_question(context):
-    task_prefix = "generate question: "  # or any task prefix you trained with
+    # Add prefix
+    task_prefix = "generate question: "
     input_text  = task_prefix + context
 
     inputs = tokenizer(input_text, return_tensors="pt", truncation=True, padding=True, max_length=512).to(device)

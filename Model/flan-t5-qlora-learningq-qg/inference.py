@@ -1,16 +1,20 @@
-from datasets import load_from_disk
+from datasets import load_dataset
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 from evaluate import load
 import torch
 
-test_dataset_dir = "./Datasets/test_dataset"
-merged_model_dir = "./merged_model"
+dataset_path = "sidovic/LearningQ-qg"
 
-test_dataset = load_from_disk(test_dataset_dir)
+test_dataset = load_dataset(dataset_path, split="test")
 
-model       = AutoModelForSeq2SeqLM.from_pretrained(merged_model_dir)
-tokenizer   = AutoTokenizer.from_pretrained(merged_model_dir)
+model_name          = "flan-t5-qlora-learningq-qg"
+remote_model_path   = f"elmehdiessalehy/{model_name}"
 
+# Load model from huggingface hub
+model       = AutoModelForSeq2SeqLM.from_pretrained(remote_model_path)
+tokenizer   = AutoTokenizer.from_pretrained(remote_model_path)
+
+# Load meterics
 rouge   = load("rouge")
 bleu    = load("bleu")
 meteor  = load("meteor")
@@ -31,13 +35,15 @@ def generate_question(example):
 # Generate predictions for the test dataset
 generated_questions = [generate_question(example) for example in test_dataset]
 
-# Evaluate using the metrics
+# Get the refence questions
 references = test_dataset['question']  # Ground truth answers in the dataset
 
+# Compute metrics
 rouge_score     = rouge.compute(predictions=generated_questions, references=references)
 bleu_score      = bleu.compute(predictions=generated_questions, references=references)
 meteor_score    = meteor.compute(predictions=generated_questions, references=references)
 
+# Display results
 print(f"ROUGE:  {rouge_score}")
 print(f"BLEU:   {bleu_score}")
 print(f"METEOR: {meteor_score}")
