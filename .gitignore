@@ -1,0 +1,16 @@
+**/__pycache__/
+**/.vscode/
+
+**/backend_env/
+**/Backend/model/*
+
+**/frontend_env/
+
+**/model_env/
+**/Datasets/**/*.json
+**/Datasets/**/*.arrow
+**/logs/*
+**/training_checkpoints/*
+**/peft_only/*
+**/trained_model/*
+**/merged_model/*
