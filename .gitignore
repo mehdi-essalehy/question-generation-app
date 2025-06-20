@@ -3,14 +3,22 @@
 
 **/backend_env/
 **/Backend/model/*
+!**/Backend/model/.gitkeep
 
 **/frontend_env/
 
 **/model_env/
 **/Datasets/**/*.json
 **/Datasets/**/*.arrow
+!**/Datasets/**/.gitkeep
+
 **/logs/*
+!**/logs/.gitkeep
 **/training_checkpoints/*
+!**/training_checkpoints/.gitkeep
 **/peft_only/*
+!**/peft_only/.gitkeep
 **/trained_model/*
+!**/trained_model/.gitkeep
 **/merged_model/*
+!**/merged_model/.gitkeep
